@@ -1,0 +1,550 @@
+{
+  "campus_name": "Indian Institute of Management Sambalpur",
+  "location": "Basantpur, Sambalpur, Odisha, India",
+  "reference_coordinates": {
+    "latitude": 21.4985,
+    "longitude": 84.0042
+  },
+  "nodes": [
+    {
+      "id": "main_gate",
+      "name": "Main Entrance Gate",
+      "type": "gate",
+      "lat": 21.4948,
+      "lon": 84.0025,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Primary campus security checkpoint, visitor registration, and arterial road entrance."
+    },
+    {
+      "id": "academic_block",
+      "name": "Academic Block",
+      "type": "academic",
+      "lat": 21.5022,
+      "lon": 84.0055,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Main academic hub featuring lecture halls, faculty offices, case rooms, and library."
+    },
+    {
+      "id": "convocation_ground",
+      "name": "Convocation Pavilion & Ground",
+      "type": "facility",
+      "lat": 21.4995,
+      "lon": 84.0045,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Large arched steel tensile canopy for annual convocations and outdoor ceremonies."
+    },
+    {
+      "id": "cricket_ground",
+      "name": "Cricket & Sports Oval",
+      "type": "sports",
+      "lat": 21.4988,
+      "lon": 84.0038,
+      "accessibility": "pedestrian",
+      "is_landmark": true,
+      "description": "Full-size cricket oval with 400m running track perimeter."
+    },
+    {
+      "id": "recreational_block",
+      "name": "Recreational Block & Gymnasium",
+      "type": "recreation",
+      "lat": 21.4975,
+      "lon": 84.0018,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Indoor sports complex, squash courts, badminton, table tennis, and yoga hall."
+    },
+    {
+      "id": "swimming_pool_facility",
+      "name": "Swimming Pool Facility Building",
+      "type": "sports",
+      "lat": 21.4972,
+      "lon": 84.0012,
+      "accessibility": "pedestrian",
+      "is_landmark": true,
+      "description": "Olympic-dimension outdoor swimming pool with changing rooms and filtration plant."
+    },
+    {
+      "id": "food_court",
+      "name": "Central Food Court & Dining Hall",
+      "type": "dining",
+      "lat": 21.5008,
+      "lon": 84.0068,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Multi-cuisine student and faculty dining center with open outdoor seating plaza."
+    },
+    {
+      "id": "single_occupancy_hostel",
+      "name": "Single Occupancy Hostel (MDP & Senior)",
+      "type": "hostel",
+      "lat": 21.5035,
+      "lon": 84.0028,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "5-storey residential block for executive students and research scholars."
+    },
+    {
+      "id": "double_occupancy_boys_hostel",
+      "name": "Double Occupancy Hostel (Boys)",
+      "type": "hostel",
+      "lat": 21.5042,
+      "lon": 84.0035,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "4-storey modern student hostel with Sambalpuri Ikat brick ornamentation."
+    },
+    {
+      "id": "double_occupancy_girls_hostel",
+      "name": "Double Occupancy Hostel (Girls)",
+      "type": "hostel",
+      "lat": 21.5048,
+      "lon": 84.0045,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Dedicated secure female student hostel with courtyard garden."
+    },
+    {
+      "id": "central_store_block",
+      "name": "Central Store & Logistics Block",
+      "type": "administrative",
+      "lat": 21.4962,
+      "lon": 84.0062,
+      "accessibility": "vehicle",
+      "is_landmark": true,
+      "description": "Inventory management, campus supplies, asset warehouse, and receiving dock."
+    },
+    {
+      "id": "staff_residence",
+      "name": "Faculty & Staff Residences",
+      "type": "residential",
+      "lat": 21.4960,
+      "lon": 84.0030,
+      "accessibility": "both",
+      "is_landmark": true,
+      "description": "Multi-storey residential towers for permanent faculty and administrative officers."
+    },
+    {
+      "id": "commercial_laundry_block",
+      "name": "Commercial Laundry Block",
+      "type": "facility",
+      "lat": 21.5045,
+      "lon": 84.0018,
+      "accessibility": "both",
+      "is_landmark": false,
+      "description": "Automated centralized laundry and dry-cleaning service block for campus residents."
+    },
+    {
+      "id": "water_body_pond",
+      "name": "Central Landscaped Lake & Eco-Pond",
+      "type": "landmark",
+      "lat": 21.4998,
+      "lon": 84.0022,
+      "accessibility": "pedestrian",
+      "is_landmark": true,
+      "description": "Rainwater harvesting pond surrounded by botanical walking paths and benches."
+    },
+    {
+      "id": "junction_main_circle",
+      "name": "Main Entrance Roundabout (J1)",
+      "type": "intersection",
+      "lat": 21.4965,
+      "lon": 84.0035,
+      "accessibility": "both",
+      "is_landmark": false,
+      "description": "Central junction connecting 7.5m main boulevard to residential and recreation zones."
+    },
+    {
+      "id": "junction_academic_cross",
+      "name": "Academic Boulevard Junction (J2)",
+      "type": "intersection",
+      "lat": 21.5010,
+      "lon": 84.0048,
+      "accessibility": "both",
+      "is_landmark": false,
+      "description": "Major intersection connecting Academic Block, Food Court, and Hostel Arterial."
+    },
+    {
+      "id": "junction_hostel_hub",
+      "name": "Hostel Zone Junction (J3)",
+      "type": "intersection",
+      "lat": 21.5030,
+      "lon": 84.0038,
+      "accessibility": "both",
+      "is_landmark": false,
+      "description": "Internal intersection branching to Single & Double Occupancy Hostels."
+    },
+    {
+      "id": "junction_sports_corner",
+      "name": "Sports Complex Junction (J4)",
+      "type": "intersection",
+      "lat": 21.4982,
+      "lon": 84.0026,
+      "accessibility": "both",
+      "is_landmark": false,
+      "description": "Intersection serving Recreational Block, Pool, and Cricket Ground."
+    },
+    {
+      "id": "parking_main_gate",
+      "name": "South Visitor Parking (P1)",
+      "type": "parking",
+      "lat": 21.4952,
+      "lon": 84.0030,
+      "accessibility": "vehicle",
+      "is_landmark": false,
+      "description": "Visitor and delivery vehicle parking lot with 120 vehicle capacity."
+    },
+    {
+      "id": "parking_academic",
+      "name": "Academic Block Parking (P2)",
+      "type": "parking",
+      "lat": 21.5020,
+      "lon": 84.0062,
+      "accessibility": "vehicle",
+      "is_landmark": false,
+      "description": "Faculty and staff reserved shaded parking lot with EV charging spots."
+    },
+    {
+      "id": "parking_hostels",
+      "name": "Hostel Two-Wheeler Parking (P3)",
+      "type": "parking",
+      "lat": 21.5038,
+      "lon": 84.0040,
+      "accessibility": "vehicle",
+      "is_landmark": false,
+      "description": "Designated cycle and motorized two-wheeler shed for student residents."
+    },
+    {
+      "id": "walkway_lake_north",
+      "name": "Lakeside Botanical Walkway (W1)",
+      "type": "path_node",
+      "lat": 21.5008,
+      "lon": 84.0025,
+      "accessibility": "pedestrian",
+      "is_landmark": false,
+      "description": "Paved scenic walking path alongside the eco-pond."
+    },
+    {
+      "id": "walkway_convocation_east",
+      "name": "Convocation Plaza Promenade (W2)",
+      "type": "path_node",
+      "lat": 21.4998,
+      "lon": 84.0055,
+      "accessibility": "pedestrian",
+      "is_landmark": false,
+      "description": "Wide pedestrian corridor connecting Convocation Ground to Food Court."
+    }
+  ],
+  "edges": [
+    {
+      "source": "main_gate",
+      "target": "parking_main_gate",
+      "distance_m": 70,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.5,
+      "base_congestion": 0.2,
+      "description": "South entry dual-lane vehicular drive"
+    },
+    {
+      "source": "main_gate",
+      "target": "junction_main_circle",
+      "distance_m": 210,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 1.0,
+      "base_congestion": 0.3,
+      "description": "Main arterial campus entrance spine"
+    },
+    {
+      "source": "parking_main_gate",
+      "target": "junction_main_circle",
+      "distance_m": 160,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.8,
+      "base_congestion": 0.1,
+      "description": "Parking exit link to main roundabout"
+    },
+    {
+      "source": "junction_main_circle",
+      "target": "staff_residence",
+      "distance_m": 90,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.2,
+      "description": "Residential access branch road"
+    },
+    {
+      "source": "junction_main_circle",
+      "target": "central_store_block",
+      "distance_m": 290,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": false, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": false,
+      "slope_percent": 1.2,
+      "base_congestion": 0.4,
+      "description": "Logistics delivery corridor for heavy supply trucks"
+    },
+    {
+      "source": "junction_main_circle",
+      "target": "junction_sports_corner",
+      "distance_m": 210,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.5,
+      "base_congestion": 0.25,
+      "description": "West sports sector arterial"
+    },
+    {
+      "source": "junction_sports_corner",
+      "target": "recreational_block",
+      "distance_m": 110,
+      "path_type": "6m Footpath & Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.4,
+      "base_congestion": 0.35,
+      "description": "Recreation block main drop-off"
+    },
+    {
+      "source": "recreational_block",
+      "target": "swimming_pool_facility",
+      "distance_m": 80,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": false, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.1,
+      "base_congestion": 0.2,
+      "description": "Paved sports pedestrian walkway"
+    },
+    {
+      "source": "junction_sports_corner",
+      "target": "cricket_ground",
+      "distance_m": 140,
+      "path_type": "3m Peripheral Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.3,
+      "description": "Cricket ground south boundary path"
+    },
+    {
+      "source": "junction_sports_corner",
+      "target": "water_body_pond",
+      "distance_m": 180,
+      "path_type": "Cycle Track & Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.6,
+      "base_congestion": 0.15,
+      "description": "Eco-park lakeside path"
+    },
+    {
+      "source": "water_body_pond",
+      "target": "walkway_lake_north",
+      "distance_m": 120,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.15,
+      "description": "Botanical garden track"
+    },
+    {
+      "source": "walkway_lake_north",
+      "target": "single_occupancy_hostel",
+      "distance_m": 310,
+      "path_type": "Cycle Track & Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.4,
+      "base_congestion": 0.25,
+      "description": "Pedestrian shortcut to MDP Hostel"
+    },
+    {
+      "source": "cricket_ground",
+      "target": "convocation_ground",
+      "distance_m": 110,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.25,
+      "description": "Central sports-ceremonial promenade"
+    },
+    {
+      "source": "convocation_ground",
+      "target": "walkway_convocation_east",
+      "distance_m": 110,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.3,
+      "description": "Paved ceremonial plaza link"
+    },
+    {
+      "source": "walkway_convocation_east",
+      "target": "food_court",
+      "distance_m": 170,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": false, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.1,
+      "base_congestion": 0.5,
+      "description": "Dining plaza pedestrian walkway"
+    },
+    {
+      "source": "junction_main_circle",
+      "target": "junction_academic_cross",
+      "distance_m": 520,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.8,
+      "base_congestion": 0.35,
+      "description": "Central Grand Avenue vehicular trunk"
+    },
+    {
+      "source": "junction_academic_cross",
+      "target": "academic_block",
+      "distance_m": 150,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.6,
+      "description": "Academic Block main portico entry"
+    },
+    {
+      "source": "academic_block",
+      "target": "parking_academic",
+      "distance_m": 70,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.3,
+      "description": "Academic faculty parking spur"
+    },
+    {
+      "source": "academic_block",
+      "target": "food_court",
+      "distance_m": 210,
+      "path_type": "6m Footpath",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.65,
+      "description": "Covered shaded walkway connecting classrooms to dining"
+    },
+    {
+      "source": "junction_academic_cross",
+      "target": "food_court",
+      "distance_m": 220,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.4,
+      "base_congestion": 0.45,
+      "description": "Food court service and vehicle entrance"
+    },
+    {
+      "source": "junction_academic_cross",
+      "target": "junction_hostel_hub",
+      "distance_m": 240,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.5,
+      "base_congestion": 0.4,
+      "description": "Hostel spine road"
+    },
+    {
+      "source": "junction_hostel_hub",
+      "target": "single_occupancy_hostel",
+      "distance_m": 120,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.25,
+      "description": "Senior hostel access roadway"
+    },
+    {
+      "source": "junction_hostel_hub",
+      "target": "double_occupancy_boys_hostel",
+      "distance_m": 140,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.35,
+      "description": "Boys hostel entrance road"
+    },
+    {
+      "source": "junction_hostel_hub",
+      "target": "parking_hostels",
+      "distance_m": 90,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.2,
+      "description": "Hostel two-wheeler parking lot access"
+    },
+    {
+      "source": "double_occupancy_boys_hostel",
+      "target": "double_occupancy_girls_hostel",
+      "distance_m": 120,
+      "path_type": "6m Footpath & Cycle Track",
+      "modes": { "walk": true, "bike": true, "two_wheeler": false, "car": false },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.2,
+      "base_congestion": 0.2,
+      "description": "Inter-hostel residential promenade"
+    },
+    {
+      "source": "junction_hostel_hub",
+      "target": "double_occupancy_girls_hostel",
+      "distance_m": 220,
+      "path_type": "6m Proposed Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.3,
+      "base_congestion": 0.25,
+      "description": "Girls hostel security entrance road"
+    },
+    {
+      "source": "single_occupancy_hostel",
+      "target": "commercial_laundry_block",
+      "distance_m": 140,
+      "path_type": "6m Footpath & Service Road",
+      "modes": { "walk": true, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": true,
+      "slope_percent": 0.4,
+      "base_congestion": 0.15,
+      "description": "Service path to commercial laundry"
+    },
+    {
+      "source": "central_store_block",
+      "target": "parking_academic",
+      "distance_m": 640,
+      "path_type": "7.5m Proposed Road",
+      "modes": { "walk": false, "bike": true, "two_wheeler": true, "car": true },
+      "wheelchair_accessible": false,
+      "slope_percent": 0.9,
+      "base_congestion": 0.25,
+      "description": "Eastern perimeter ring road (vehicle heavy, strictly no pedestrian footway)"
+    }
+  ]
+}

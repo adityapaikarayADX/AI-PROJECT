@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IIM Sambalpur — Campus Navigator</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Fraunces (Editorial Serif) + Inter (Clean Sans) + IBM Plex Mono (Coordinates/Badges) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['Inter', '-apple-system', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+          colors: {
+            bg: '#f7f3ee',
+            surface: '#fffcf8',
+            ink: '#1a1917',
+            muted: '#6f6b66',
+            line: '#d9d3cb',
+            accent: '#a78b70',
+            route: '#A34C32',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --surface: #fffcf8;
+      --text: #1a1917;
+      --muted: #6f6b66;
+      --line: #d9d3cb;
+      --accent: #a78b70;
+      --radius-control: 12px;
+      --content-width: 1480px;
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --duration-fast: 160ms;
+      --duration-enter: 600ms;
+    }
+    
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    /* Leaflet customization */
+    #map {
+      height: 100%;
+      min-height: 520px;
+      width: 100%;
+      background: var(--bg);
+      z-index: 10;
+    }
+    .leaflet-container {
+      background-color: var(--bg) !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+    .leaflet-popup-content-wrapper {
+      background: var(--surface) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--line) !important;
+      border-radius: 4px !important;
+      box-shadow: 0 4px 14px rgba(26, 25, 23, 0.06) !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content {
+      margin: 12px 14px !important;
+      line-height: 1.45 !important;
+    }
+    .leaflet-popup-tip {
+      background: var(--surface) !important;
+    }
+    .custom-tooltip {
+      background: var(--text) !important;
+      color: var(--bg) !important;
+      border: none !important;
+      font-size: 11px !important;
+      font-family: 'IBM Plex Mono', monospace !important;
+      font-weight: 500 !important;
+      padding: 4px 8px !important;
+      border-radius: 2px !important;
+      box-shadow: none !important;
+    }
+    .custom-tooltip:before {
+      display: none !important;
+    }
+
+    /* Minimal hairline scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    /* Code & JSON display */
+    pre, code {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Motion & Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-ink bg-bg selection:bg-line selection:text-ink">
+
+  <!-- ============================================================ -->
+  <!-- 1. HEADER (Text-Only IIM Sambalpur Brand, Zero Fabricated Logo) -->
+  <!-- ============================================================ -->
+  <header class="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-line">
+    <div class="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Product Label -->
+      <div class="flex items-center space-x-3">
+        <button onclick="switchView('home')" class="text-left group flex items-baseline space-x-2.5">
+          <span class="font-serif font-bold text-base tracking-tight text-ink group-hover:text-muted transition-colors">
+            IIM Sambalpur
+          </span>
+          <span class="text-line font-light">|</span>
+          <span class="text-xs font-medium text-muted tracking-normal">
+            Campus Navigator
+          </span>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex items-center space-x-1 sm:space-x-2.5 text-xs font-medium text-muted">
+        <button onclick="switchView('home')" id="nav-home" class="nav-btn px-3 py-1.5 rounded-full text-ink bg-line/50 transition-colors">
+          Home
+        </button>
+        <button onclick="switchView('navigator')" id="nav-navigator" class="nav-btn px-3 py-1.5 rounded-full hover:text-ink transition-colors">
+          Navigator
+        </button>
+        <button onclick="switchView('explore')" id="nav-explore" class="nav-btn px-3 py-1.5 rounded-full hover:text-ink transition-colors">
+          Explore
+        </button>
+        <button onclick="switchView('about')" id="nav-about" class="nav-btn px-3 py-1.5 rounded-full hover:text-ink transition-colors">
+          About
+        </button>
+      </nav>
+
+      <!-- Right Action CTA -->
+      <div class="flex items-center space-x-3">
+        <button onclick="switchView('navigator')" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-ink text-surface hover:bg-neutral-800 text-xs font-medium tracking-tight transition-colors">
+          Plan a route &rarr;
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 2. MAIN APPLICATION CONTAINER                                -->
+  <!-- ============================================================ -->
+  <main class="flex-1 max-w-[1480px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- VIEW A: HOMEPAGE (Golden-Hour Editorial Reference Style)     -->
+    <!-- ------------------------------------------------------------ -->
+    <div id="view-home" class="view-panel space-y-20">
+      
+      <!-- Full-Width Editorial Hero: Authentic Photography + Human Copy -->
+      <section class="pt-4 pb-12 border-b border-line">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          <!-- Left Column (55%): Typography & Pitch -->
+          <div class="lg:col-span-6 space-y-6">
+            <div class="text-[11px] font-mono uppercase tracking-widest text-muted">
+              CAMPUS NAVIGATION
+            </div>
+            
+            <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-ink leading-[1.08]">
+              Find your way.<br />
+              <em class="italic font-normal">Feel at home.</em>
+            </h1>
+            
+            <p class="text-base sm:text-lg text-muted max-w-xl font-normal leading-relaxed">
+              Explore IIM Sambalpur, find campus destinations, and choose the route that works for you.
+            </p>
+
+            <div class="pt-3 flex flex-wrap gap-3.5 items-center">
+              <button onclick="switchView('navigator')" class="px-6 py-3 rounded-full bg-ink text-surface hover:bg-neutral-800 text-xs font-semibold tracking-wide transition-colors">
+                Plan my route &rarr;
+              </button>
+              <button onclick="switchView('explore')" class="px-6 py-3 rounded-full border border-line bg-surface hover:bg-line/40 text-ink text-xs font-semibold tracking-wide transition-colors">
+                Explore campus
+              </button>
+            </div>
+
+            <!-- Interactive Quick Route Finder Widget -->
+            <div class="mt-5 p-4 bg-surface border border-line rounded-xl shadow-xs space-y-3">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-muted flex items-center justify-between">
+                <span>Quick Route Planner</span>
+                <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[9px] border border-emerald-200">Interactive</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                <div class="sm:col-span-5">
+                  <label for="heroOrigin" class="block text-[10px] text-muted mb-1 font-medium">Starting Point</label>
+                  <select id="heroOrigin" class="w-full bg-bg border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink focus:outline-none focus:border-ink">
+                  </select>
+                </div>
+                <div class="sm:col-span-1 text-center text-muted font-bold text-xs pt-3 hidden sm:block">&rarr;</div>
+                <div class="sm:col-span-4">
+                  <label for="heroDest" class="block text-[10px] text-muted mb-1 font-medium">Destination</label>
+                  <select id="heroDest" class="w-full bg-bg border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink focus:outline-none focus:border-ink">
+                  </select>
+                </div>
+                <div class="sm:col-span-2 pt-3">
+                  <button onclick="launchHeroRoute()" class="w-full py-1.5 rounded-lg bg-ink hover:bg-neutral-800 text-surface text-xs font-semibold tracking-wide transition-colors">
+                    Find &rarr;
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 pt-1 text-[11px] items-center">
+                <span class="text-muted text-[10px] mr-1">Popular routes:</span>
+                <button onclick="quickLaunchRoute('main_gate','academic_block','walk')" class="px-2.5 py-0.5 rounded-full bg-bg border border-line hover:border-neutral-500 text-ink text-[10px] transition-colors">Gate ➔ Academic</button>
+                <button onclick="quickLaunchRoute('junction_hostel_hub','food_court','walk')" class="px-2.5 py-0.5 rounded-full bg-bg border border-line hover:border-neutral-500 text-ink text-[10px] transition-colors">Hostels ➔ Dining</button>
+                <button onclick="quickLaunchRoute('recreational_block','swimming_pool_facility','walk')" class="px-2.5 py-0.5 rounded-full bg-bg border border-line hover:border-neutral-500 text-ink text-[10px] transition-colors">Gym ➔ Pool</button>
+              </div>
+            </div>
+
+            <!-- Authentic Geographic Reference Badge -->
+            <div class="pt-6 border-t border-line/60 flex items-center space-x-3 text-xs text-muted">
+              <span class="font-mono text-[11px]">Basantpur, Sambalpur &bull; Permanent Campus</span>
+            </div>
+          </div>
+
+          <!-- Right Column (45%): Authentic Campus Photograph (Golden Hour / Dusk Ceremony) -->
+          <div class="lg:col-span-6 relative">
+            <div class="relative rounded-2xl overflow-hidden border border-line/80 shadow-sm bg-surface">
+              <img 
+                src="assets/images/convocation_ceremony_dusk.jpg" 
+                alt="IIM Sambalpur Convocation Pavilion and Ground in warm sunset light" 
+                class="w-full h-[400px] sm:h-[480px] object-cover object-center transition-transform duration-700 hover:scale-[1.01]"
+              />
+              <!-- Editorial Photo Caption -->
+              <div class="absolute bottom-3 left-3 right-3 p-3 bg-surface/90 backdrop-blur-sm border border-line text-xs flex items-center justify-between text-muted">
+                <span>Convocation Pavilion &amp; Grounds &bull; Evening light</span>
+                <span class="font-mono text-[10px]">21.4995° N, 84.0045° E</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Below the Fold: "Getting around, made simple." (No KPI Strip, No Wall of Cards) -->
+      <section class="space-y-12">
+        <div class="max-w-2xl space-y-3">
+          <div class="text-[11px] font-mono uppercase tracking-widest text-muted">A HUMAN-SCALE CAMPUS</div>
+          <h2 class="font-serif text-3xl sm:text-4xl font-bold text-ink tracking-tight">
+            Getting around, made simple.
+          </h2>
+          <p class="text-sm sm:text-base text-muted leading-relaxed">
+            Spanning over 200 acres, the permanent IIM Sambalpur campus brings together academic halls, student residences, library suites, and sports facilities.
+          </p>
+        </div>
+
+        <!-- 3 Spacious Editorial Feature Statements -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-xs text-muted">
+          <div class="space-y-2 border-t border-line pt-4">
+            <span class="font-mono text-[10px] text-ink block">01</span>
+            <h3 class="font-serif text-lg font-bold text-ink">Choose how you travel</h3>
+            <p class="leading-relaxed">
+              Walk, bicycle, or drive with routes tailored to each mode. Automobiles are restricted to arterial roads to preserve peaceful walking paths.
+            </p>
+          </div>
+
+          <div class="space-y-2 border-t border-line pt-4">
+            <span class="font-mono text-ink text-[10px] block">02</span>
+            <h3 class="font-serif text-lg font-bold text-ink">Find a clear route</h3>
+            <p class="leading-relaxed">
+              Paved walkways, milestone landmarks, and step-free access ensure comfortable journeys between hostels, dining, and classrooms.
+            </p>
+          </div>
+
+          <div class="space-y-2 border-t border-line pt-4">
+            <span class="font-mono text-ink text-[10px] block">03</span>
+            <h3 class="font-serif text-lg font-bold text-ink">Navigate with confidence</h3>
+            <p class="leading-relaxed">
+              Clear milestone cues provide visual orientation even when satellite GPS is degraded inside multi-storey residential and academic complexes.
+            </p>
+          </div>
+        </div>
+
+        <!-- Single Elegant Map & Route Preview Block -->
+        <div class="p-8 sm:p-10 bg-surface border border-line rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+          <div class="max-w-xl space-y-3">
+            <h3 class="font-serif text-2xl font-bold text-ink">
+              Ready to find your destination?
+            </h3>
+            <p class="text-xs sm:text-sm text-muted leading-relaxed">
+              Select any building, hostel, or gate on campus to see distance, estimated walking or driving times, and turn-by-turn directions.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="switchView('navigator')" class="px-6 py-3 rounded-full bg-ink text-surface hover:bg-neutral-800 text-xs font-semibold tracking-wide transition-colors">
+              Open route planner &rarr;
+            </button>
+            <button onclick="switchView('explore')" class="px-5 py-3 rounded-full border border-line bg-bg hover:bg-line/40 text-ink text-xs font-semibold tracking-wide transition-colors">
+              Explore campus directory &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- VIEW B: NAVIGATOR (Functional Route-Planning Application)    -->
+    <!-- ------------------------------------------------------------ -->
+    <div id="view-navigator" class="view-panel hidden space-y-6">
+      
+      <!-- Sub-Header Bar -->
+      <div class="flex items-center justify-between text-xs border-b border-line pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="font-mono text-muted uppercase text-[10px]">CAMPUS ROUTING</span>
+          <span class="text-line">/</span>
+          <span class="font-semibold text-ink">IIM Sambalpur Navigation Workspace</span>
+        </div>
+        <div class="flex items-center space-x-3 text-muted text-[11px]">
+          <span class="font-mono text-muted text-[10px]">Basantpur Permanent Campus</span>
+          <span class="text-line">|</span>
+          <button onclick="resetPlanner()" class="text-ink hover:underline">Reset inputs</button>
+        </div>
+      </div>
+
+      <!-- Quick Scenario Presets Strip -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <span class="text-[10px] font-mono uppercase tracking-wider text-muted whitespace-nowrap">Presets:</span>
+        <button onclick="applyPreset('main_gate','academic_block','walk',false)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          Gate ➔ Academic Block
+        </button>
+        <button onclick="applyPreset('junction_hostel_hub','food_court','walk',false)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          Hostels ➔ Dining
+        </button>
+        <button onclick="applyPreset('single_occupancy_hostel','convocation_ground','bike',false)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          MDP Hostel ➔ Convocation (Bike)
+        </button>
+        <button onclick="applyPreset('recreational_block','swimming_pool_facility','walk',false)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          Sports Hub ➔ Pool
+        </button>
+        <button onclick="applyPreset('staff_residence','food_court','walk',true)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          Step-Free: Residence ➔ Dining
+        </button>
+        <button onclick="applyPreset('main_gate','parking_academic','car',false)" class="px-2.5 py-1 rounded-full border border-line bg-surface hover:border-neutral-500 text-ink text-[11px] whitespace-nowrap transition-colors">
+          Gate ➔ Faculty Parking (Car)
+        </button>
+      </div>
+
+      <!-- 3-Column Workspace -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Column 1: Route Planning Controls (lg:col-span-4) -->
+        <div class="lg:col-span-4 bg-surface border border-line p-5 space-y-5 rounded-xl shadow-sm">
+          
+          <div class="border-b border-line pb-2 flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-ink">
+              Plan Your Journey
+            </h2>
+            <span class="text-[10px] text-muted font-mono">Step 1 of 2</span>
+          </div>
+
+          <!-- Origin & Destination -->
+          <div class="space-y-3">
+            <div>
+              <label for="selOrigin" class="block text-[11px] font-semibold text-ink mb-1">
+                Starting Location (Origin)
+              </label>
+              <select id="selOrigin" class="w-full bg-bg border border-line rounded-lg px-3 py-2 text-xs text-ink focus:outline-none focus:border-ink">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <!-- Swap Button -->
+            <div class="flex justify-center -my-1">
+              <button id="btnSwap" type="button" title="Swap Origin and Destination" class="p-1.5 border border-line bg-surface hover:bg-line/40 rounded-full text-muted hover:text-ink text-xs transition-colors">
+                ⇅ Swap
+              </button>
+            </div>
+
+            <div>
+              <label for="selDest" class="block text-[11px] font-semibold text-ink mb-1">
+                Destination
+              </label>
+              <select id="selDest" class="w-full bg-bg border border-line rounded-lg px-3 py-2 text-xs text-ink focus:outline-none focus:border-ink">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Transport Mode Selector (Clear Selected vs Unselected States) -->
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-semibold text-ink">
+              Mode of Transport
+            </label>
+            <div class="grid grid-cols-4 gap-1.5" id="modePillContainer">
+              <button type="button" data-mode="walk" class="mode-btn active flex flex-col items-center justify-center py-2 px-1 rounded-lg border border-ink bg-ink text-surface text-xs font-medium transition-colors">
+                <span>🚶</span>
+                <span class="text-[10px] mt-0.5">Walk</span>
+              </button>
+              <button type="button" data-mode="bike" class="mode-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg border border-line bg-bg text-muted hover:text-ink text-xs font-medium transition-colors">
+                <span>🚲</span>
+                <span class="text-[10px] mt-0.5">Bicycle</span>
+              </button>
+              <button type="button" data-mode="two_wheeler" class="mode-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg border border-line bg-bg text-muted hover:text-ink text-xs font-medium transition-colors">
+                <span>🛵</span>
+                <span class="text-[10px] mt-0.5">Two-wheeler</span>
+              </button>
+              <button type="button" data-mode="car" class="mode-btn flex flex-col items-center justify-center py-2 px-1 rounded-lg border border-line bg-bg text-muted hover:text-ink text-xs font-medium transition-colors">
+                <span>🚗</span>
+                <span class="text-[10px] mt-0.5">Car / Van</span>
+              </button>
+            </div>
+            <p id="modeConstraintNote" class="text-[10px] text-muted leading-tight pt-1">
+              Walking mode uses dedicated pedestrian footpaths and shaded porticos.
+            </p>
+          </div>
+
+          <!-- Conditions: Time of Day & Weather -->
+          <div class="grid grid-cols-2 gap-3 pt-1 border-t border-line">
+            <div>
+              <label for="selTimeOfDay" class="block text-[10px] font-semibold text-ink mb-1">
+                Time of Day
+              </label>
+              <select id="selTimeOfDay" class="w-full bg-bg border border-line rounded-lg px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-ink">
+                <option value="morning_peak">Morning Peak (8-10 AM)</option>
+                <option value="afternoon">Lunch Hour (12-2 PM)</option>
+                <option value="evening_peak">Evening (5-7 PM)</option>
+                <option value="night">Night (8-11 PM)</option>
+                <option value="off_peak">Off-Peak Normal</option>
+              </select>
+            </div>
+            <div>
+              <label for="selWeather" class="block text-[10px] font-semibold text-ink mb-1">
+                Weather
+              </label>
+              <select id="selWeather" class="w-full bg-bg border border-line rounded-lg px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-ink">
+                <option value="clear">Clear &amp; Dry</option>
+                <option value="sunny_hot">Hot Afternoon</option>
+                <option value="rainy">Monsoon Rain</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step-Free Accessibility Toggle -->
+          <div class="border-t border-line pt-2">
+            <label class="flex items-start space-x-2.5 cursor-pointer">
+              <input type="checkbox" id="chkAccessible" class="mt-0.5 w-4 h-4 rounded accent-ink cursor-pointer" />
+              <div>
+                <span class="text-xs font-semibold text-ink block">Step-free routes</span>
+                <span class="text-[10px] text-muted block leading-tight">
+                  Accessible paths avoiding staircases and steep terrain.
+                </span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Primary Submit Action -->
+          <button id="btnCompute" type="button" class="w-full py-3 rounded-lg bg-ink hover:bg-neutral-800 text-surface text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm">
+            Find route
+          </button>
+
+          <!-- Error Feedback Box -->
+          <div id="navErrorAlert" class="hidden p-3 bg-bg border border-line rounded-lg text-xs text-ink space-y-1">
+            <div class="font-bold" id="navErrorTitle">Route unavailable</div>
+            <div class="text-[11px] text-muted" id="navErrorMessage"></div>
+          </div>
+
+        </div>
+
+        <!-- Column 2: Interactive Campus Map (lg:col-span-5) -->
+        <div class="lg:col-span-5 bg-surface border border-line rounded-xl flex flex-col relative h-[560px] overflow-hidden shadow-sm">
+          
+          <!-- Map Toolbar -->
+          <div class="h-10 px-4 border-b border-line flex items-center justify-between text-xs text-muted bg-bg/60 flex-shrink-0">
+            <div class="font-mono text-[11px] text-ink flex items-center space-x-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-ink inline-block"></span>
+              <span>IIM Sambalpur Campus Map</span>
+            </div>
+            <div class="flex items-center space-x-3 text-[11px]">
+              <button id="btnMapFit" class="text-ink hover:underline">Fit route</button>
+              <span class="text-line">|</span>
+              <button id="btnMapReset" class="text-muted hover:text-ink">Reset view</button>
+            </div>
+          </div>
+
+          <!-- Map Container -->
+          <div class="flex-1 relative w-full h-full">
+            <div id="map"></div>
+
+            <!-- Restrained Minimalist Map Legend -->
+            <div class="absolute bottom-3 left-3 z-[400] bg-surface/95 border border-line p-2.5 text-[10px] space-y-1.5 rounded-lg max-w-[210px] shadow-sm">
+              <div class="font-mono uppercase text-[9px] text-muted border-b border-line pb-0.5">
+                Map Legend
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-1 bg-[#A34C32] rounded-full inline-block"></span>
+                <span class="text-ink font-medium">Recommended Route</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-0.5 border-t border-dashed border-muted inline-block"></span>
+                <span class="text-muted">Direct Line</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-1 bg-neutral-600 rounded-full inline-block"></span>
+                <span class="text-muted">Arterial Campus Road</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-1 bg-line rounded-full inline-block"></span>
+                <span class="text-muted">Footpath &bull; Cycle Track</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Column 3: Route Results & Directions (lg:col-span-3) -->
+        <div class="lg:col-span-3 bg-surface border border-line rounded-xl p-5 space-y-4 flex flex-col h-[560px] overflow-hidden shadow-sm">
+          
+          <div class="border-b border-line pb-2 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-ink">
+              Route Details
+            </h2>
+            <span id="routeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-line bg-bg text-muted">
+              Ready
+            </span>
+          </div>
+
+          <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+            
+            <!-- Trip Header -->
+            <div class="space-y-1 border-b border-line pb-2.5">
+              <div class="text-[10px] font-mono text-muted flex justify-between">
+                <span id="lblTripMode">Walking Route</span>
+                <span id="lblDetourRatio">--</span>
+              </div>
+              <div class="text-xs font-semibold text-ink leading-snug" id="lblTripTitle">
+                Select origin &amp; destination
+              </div>
+            </div>
+
+            <!-- Primary Distance & ETA Cards -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="p-3 bg-bg border border-line rounded-lg">
+                <div class="text-[9px] font-mono uppercase text-muted">Distance</div>
+                <div id="statNavDist" class="text-lg font-bold text-ink mt-0.5 font-mono">-- m</div>
+                <div id="statDirectDist" class="text-[10px] text-muted">Direct: -- m</div>
+              </div>
+              <div class="p-3 bg-bg border border-line rounded-lg">
+                <div class="text-[9px] font-mono uppercase text-muted">Estimated Time</div>
+                <div id="statETA" class="text-lg font-bold text-ink mt-0.5 font-mono">-- min</div>
+                <div id="statTurns" class="text-[10px] text-muted">Turns: --</div>
+              </div>
+            </div>
+
+            <!-- Route Explanation Narrative -->
+            <div class="p-3 bg-bg border border-line rounded-lg space-y-1 text-xs">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-muted">Route Guidance</div>
+              <p id="txtExplanation" class="text-[11px] text-muted leading-relaxed">
+                Choose a starting point and destination to view recommended campus pathways.
+              </p>
+            </div>
+
+            <!-- Interactive Journey Simulation & Actions -->
+            <div class="p-3 bg-bg border border-line rounded-lg space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-muted">Journey Simulator</span>
+                <button id="btnToggleVoice" onclick="toggleVoice()" class="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface text-muted hover:text-ink transition-colors">
+                  🔇 Voice: Off
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <button id="btnToggleSim" onclick="toggleSimulation()" class="flex-1 py-1.5 px-2 bg-ink hover:bg-neutral-800 text-surface text-xs font-semibold rounded-md transition-colors text-center shadow-xs">
+                  ▶ Start Live Simulation
+                </button>
+                <button id="btnCopyDirections" onclick="copyDirections()" class="py-1.5 px-2.5 bg-surface border border-line hover:border-neutral-500 text-ink text-xs font-semibold rounded-md transition-colors" title="Copy directions to clipboard">
+                  📋 Copy
+                </button>
+              </div>
+              <div id="simProgressContainer" class="hidden space-y-1 pt-1.5 border-t border-line">
+                <div class="flex justify-between text-[10px] font-mono text-muted">
+                  <span id="simStatusText">Traversing route...</span>
+                  <span id="simPct">0%</span>
+                </div>
+                <div class="w-full bg-surface h-1.5 rounded-full overflow-hidden border border-line">
+                  <div id="simProgressBar" class="h-full bg-emerald-600 transition-all duration-300 w-0"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Milestone Landmark Cue for GPS Loss -->
+            <div class="p-3 bg-bg border border-line rounded-lg space-y-1 text-xs">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-muted">Milestone Landmark Guide</div>
+              <p id="txtLandmarkGuide" class="text-[11px] text-muted leading-relaxed">
+                Physical visual landmarks provide orientation when satellite signals are obstructed indoors.
+              </p>
+            </div>
+
+            <!-- Turn-by-Turn Instruction Stepper -->
+            <div class="space-y-2 pt-1">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-muted">
+                Step-by-Step Directions
+              </div>
+              <ol id="listInstructions" class="space-y-2 text-xs">
+                <li class="text-[11px] text-muted italic">No active route selected.</li>
+              </ol>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- VIEW C: EXPLORE (Verified Campus Locations & Photography)    -->
+    <!-- ------------------------------------------------------------ -->
+    <div id="view-explore" class="view-panel hidden space-y-8">
+      
+      <div class="border-b border-line pb-4 flex flex-col sm:flex-row items-baseline justify-between gap-4">
+        <div>
+          <div class="text-[11px] font-mono uppercase tracking-widest text-muted">CAMPUS DIRECTORY</div>
+          <h2 class="font-serif text-3xl sm:text-4xl font-bold text-ink tracking-tight mt-1">
+            Explore Campus Destinations
+          </h2>
+          <p class="text-xs sm:text-sm text-muted mt-1 max-w-xl">
+            Browse lecture halls, residences, dining, and athletic facilities across the 200-acre permanent campus.
+          </p>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap gap-1.5 text-xs" id="exploreFilterBar">
+          <button data-cat="all" class="cat-pill px-3 py-1 bg-ink text-surface rounded-full text-xs font-medium">All</button>
+          <button data-cat="academic" class="cat-pill px-3 py-1 bg-surface text-muted hover:text-ink border border-line rounded-full text-xs font-medium">Academic</button>
+          <button data-cat="hostel" class="cat-pill px-3 py-1 bg-surface text-muted hover:text-ink border border-line rounded-full text-xs font-medium">Residences</button>
+          <button data-cat="dining" class="cat-pill px-3 py-1 bg-surface text-muted hover:text-ink border border-line rounded-full text-xs font-medium">Dining</button>
+          <button data-cat="sports" class="cat-pill px-3 py-1 bg-surface text-muted hover:text-ink border border-line rounded-full text-xs font-medium">Sports &amp; Grounds</button>
+          <button data-cat="gate" class="cat-pill px-3 py-1 bg-surface text-muted hover:text-ink border border-line rounded-full text-xs font-medium">Gates &amp; Parking</button>
+        </div>
+      </div>
+
+      <!-- Places Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="exploreGrid">
+        <!-- Rendered dynamically with authentic photos -->
+      </div>
+
+    </div>
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- VIEW D: ABOUT & PRIVACY (Quiet, Human, Institutional Context) -->
+    <!-- ------------------------------------------------------------ -->
+    <div id="view-about" class="view-panel hidden space-y-10">
+      
+      <div class="border-b border-line pb-4">
+        <div class="text-[11px] font-mono uppercase tracking-widest text-muted">ABOUT THIS SYSTEM</div>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-ink tracking-tight mt-1">
+          IIM Sambalpur Campus Mobility
+        </h2>
+        <p class="text-xs sm:text-sm text-muted mt-1 max-w-xl">
+          Designed for students, faculty, staff, and visitors navigating the Basantpur permanent campus.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-muted leading-relaxed">
+        <div class="space-y-4">
+          <h3 class="font-bold text-sm text-ink">The Permanent Campus</h3>
+          <p>
+            Established by the Government of India, the Indian Institute of Management Sambalpur operates from its permanent campus situated at Basantpur, Sambalpur, Odisha.
+          </p>
+          <p>
+            The campus features a balanced distribution of academic complexes, executive MDP centers, student residential blocks, a central ceremonial convocation oval, and a landscaped eco-pond.
+          </p>
+          <p>
+            This navigation system reflects the physical reality of the site: pedestrian-only promenades, dedicated bicycle tracks, and perimeter parking hubs that keep internal corridors quiet, green, and safe.
+          </p>
+        </div>
+
+        <div class="p-6 bg-surface border border-line rounded-xl space-y-4 shadow-sm">
+          <h3 class="font-bold text-sm text-ink uppercase tracking-wider text-[11px]">
+            Privacy &amp; Data Safeguards
+          </h3>
+          <ul class="space-y-2.5">
+            <li class="flex items-start space-x-2">
+              <span class="font-mono text-ink">&bull;</span>
+              <span><strong>No Location History Stored:</strong> Routing calculations are processed ephemerally in your browser session. Your coordinates and personal movement histories are never logged or saved to disk.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="font-mono text-ink">&bull;</span>
+              <span><strong>Zero Tracking Identifiers:</strong> The application does not require logins, cookies, or device MAC identifiers to plan a route.</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <span class="font-mono text-ink">&bull;</span>
+              <span><strong>Compliance:</strong> Built in accordance with India's Digital Personal Data Protection Act.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- 3. FOOTER                                                    -->
+  <!-- ============================================================ -->
+  <footer class="border-t border-line bg-bg py-8 mt-12 text-xs text-muted">
+    <div class="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-serif font-bold text-ink">IIM Sambalpur</span>
+        <span>&bull;</span>
+        <span>Campus Navigator</span>
+      </div>
+      <div class="font-mono text-[11px]">
+        Basantpur, Sambalpur, Odisha &bull; Permanent Campus
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================ -->
+  <!-- 4. CORE JAVASCRIPT: Campus Graph & Routing Logic -->
+  <!-- ============================================================ -->
+  <script>
+    const R_EARTH = 6371000.0;
+    const API_BASE_URL = "http://localhost:8000";
+
+    // Campus Vertices Dataset (23 Verified Locations from Campus Master Plan)
+    const CAMPUS_NODES = {
+      "main_gate": { id: "main_gate", name: "Main Entrance Gate", type: "gate", lat: 21.4948, lon: 84.0025, is_landmark: true, desc: "Primary campus security checkpoint and visitor arrival portico.", img: "assets/images/academic_block.jpg" },
+      "parking_main_gate": { id: "parking_main_gate", name: "South Visitor Parking (P1)", type: "gate", lat: 21.4952, lon: 84.0030, is_landmark: false, desc: "120-bay vehicular parking area adjacent to the south gate.", img: "assets/images/store_block.jpg" },
+      "junction_main_circle": { id: "junction_main_circle", name: "Main Entrance Roundabout", type: "gate", lat: 21.4965, lon: 84.0035, is_landmark: false, desc: "Primary distribution roundabout for residential and academic sectors.", img: "assets/images/aerial_campus_site_plan.jpg" },
+      "staff_residence": { id: "staff_residence", name: "Faculty & Staff Residences", type: "hostel", lat: 21.4960, lon: 84.0030, is_landmark: true, desc: "Multi-storey residential towers for permanent faculty and administrative officers.", img: "assets/images/staff_residence_front.jpg" },
+      "central_store_block": { id: "central_store_block", name: "Central Store & Logistics Block", type: "academic", lat: 21.4962, lon: 84.0062, is_landmark: true, desc: "Central inventory warehouse, campus supplies, and receiving dock.", img: "assets/images/store_block.jpg" },
+      "junction_sports_corner": { id: "junction_sports_corner", name: "Sports Sector Junction", type: "sports", lat: 21.4982, lon: 84.0026, is_landmark: false, desc: "Junction serving the gymnasium, swimming pool, and sports oval.", img: "assets/images/recreational_block.jpg" },
+      "recreational_block": { id: "recreational_block", name: "Recreational Block & Gymnasium", type: "sports", lat: 21.4975, lon: 84.0018, is_landmark: true, desc: "Indoor gymnasium, badminton courts, squash courts, and yoga hall.", img: "assets/images/recreational_block.jpg" },
+      "swimming_pool_facility": { id: "swimming_pool_facility", name: "Swimming Pool Facility", type: "sports", lat: 21.4972, lon: 84.0012, is_landmark: true, desc: "Outdoor swimming pool with changing rooms and filtration plant.", img: "assets/images/swimming_pool_facility.jpg" },
+      "cricket_ground": { id: "cricket_ground", name: "Cricket & Sports Oval", type: "sports", lat: 21.4988, lon: 84.0038, is_landmark: true, desc: "Full-size cricket ground with 400m perimeter athletic running track.", img: "assets/images/convocation_cricket_ground_side.jpg" },
+      "water_body_pond": { id: "water_body_pond", name: "Central Eco-Pond & Lake", type: "sports", lat: 21.4998, lon: 84.0022, is_landmark: true, desc: "Rainwater harvesting pond surrounded by botanical walking paths.", img: "assets/images/aerial_campus_site_plan.jpg" },
+      "walkway_lake_north": { id: "walkway_lake_north", name: "Lakeside Botanical Walkway", type: "sports", lat: 21.5008, lon: 84.0025, is_landmark: false, desc: "Paved scenic walking path flanking the central lake.", img: "assets/images/convocation_cricket_ground_side.jpg" },
+      "convocation_ground": { id: "convocation_ground", name: "Convocation Pavilion & Ground", type: "academic", lat: 21.4995, lon: 84.0045, is_landmark: true, desc: "Arched steel tensile canopy ceremonial amphitheatre for convocations.", img: "assets/images/convocation_ceremony_dusk.jpg" },
+      "walkway_convocation_east": { id: "walkway_convocation_east", name: "Convocation Promenade", type: "academic", lat: 21.4998, lon: 84.0055, is_landmark: false, desc: "Pedestrian corridor connecting convocation grounds to dining plaza.", img: "assets/images/convocation_ceremony_dusk.jpg" },
+      "junction_academic_cross": { id: "junction_academic_cross", name: "Academic Boulevard Junction", type: "academic", lat: 21.5010, lon: 84.0048, is_landmark: false, desc: "Major intersection connecting the Academic Block and Food Court.", img: "assets/images/academic_block.jpg" },
+      "academic_block": { id: "academic_block", name: "Academic Block", type: "academic", lat: 21.5022, lon: 84.0055, is_landmark: true, desc: "Main lecture halls, library, case rooms, and faculty offices.", img: "assets/images/academic_block.jpg" },
+      "parking_academic": { id: "parking_academic", name: "Academic Faculty Parking (P2)", type: "gate", lat: 21.5020, lon: 84.0062, is_landmark: false, desc: "Reserved faculty and visitor vehicle parking area.", img: "assets/images/store_block.jpg" },
+      "food_court": { id: "food_court", name: "Central Food Court & Dining", type: "dining", lat: 21.5008, lon: 84.0068, is_landmark: true, desc: "Multi-cuisine student and faculty dining center with outdoor plaza.", img: "assets/images/food_court.jpg" },
+      "junction_hostel_hub": { id: "junction_hostel_hub", name: "Hostel Zone Junction", type: "hostel", lat: 21.5030, lon: 84.0038, is_landmark: false, desc: "Distribution junction branching to senior and student hostels.", img: "assets/images/single_occupancy_hostel.jpg" },
+      "single_occupancy_hostel": { id: "single_occupancy_hostel", name: "Single Occupancy Hostel (MDP)", type: "hostel", lat: 21.5035, lon: 84.0028, is_landmark: true, desc: "5-storey MDP and executive research scholar residence.", img: "assets/images/single_occupancy_hostel.jpg" },
+      "double_occupancy_boys_hostel": { id: "double_occupancy_boys_hostel", name: "Double Occupancy Hostel (Boys)", type: "hostel", lat: 21.5042, lon: 84.0035, is_landmark: true, desc: "Student residence with Sambalpuri Ikat brick ornamentation.", img: "assets/images/double_occupancy_hostel.jpg" },
+      "double_occupancy_girls_hostel": { id: "double_occupancy_girls_hostel", name: "Double Occupancy Hostel (Girls)", type: "hostel", lat: 21.5048, lon: 84.0045, is_landmark: true, desc: "Secure female student residence complex with courtyard garden.", img: "assets/images/double_occupancy_hostel.jpg" },
+      "parking_hostels": { id: "parking_hostels", name: "Hostel Two-Wheeler Shed (P3)", type: "gate", lat: 21.5038, lon: 84.0040, is_landmark: false, desc: "Resident scooter and bicycle parking shed.", img: "assets/images/store_block.jpg" },
+      "commercial_laundry_block": { id: "commercial_laundry_block", name: "Commercial Laundry Block", type: "hostel", lat: 21.5045, lon: 84.0018, is_landmark: false, desc: "Centralized laundry and dry-cleaning facility for campus residents.", img: "assets/images/single_occupancy_hostel.jpg" }
+    };
+
+    // Campus Navigable Edges (26 Segments)
+    const CAMPUS_EDGES = [
+      { u: "main_gate", v: "parking_main_gate", dist: 70, type: "7.5m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.2 },
+      { u: "main_gate", v: "junction_main_circle", dist: 210, type: "7.5m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.3 },
+      { u: "parking_main_gate", v: "junction_main_circle", dist: 160, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.1 },
+      { u: "junction_main_circle", v: "staff_residence", dist: 90, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.2 },
+      { u: "junction_main_circle", v: "central_store_block", dist: 290, type: "7.5m Road", modes: ["bike", "two_wheeler", "car"], accessible: false, cong: 0.4 },
+      { u: "junction_main_circle", v: "junction_sports_corner", dist: 210, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.25 },
+      { u: "junction_sports_corner", v: "recreational_block", dist: 110, type: "6m Footpath & Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.35 },
+      { u: "recreational_block", v: "swimming_pool_facility", dist: 80, type: "6m Footpath", modes: ["walk"], accessible: true, cong: 0.2 },
+      { u: "junction_sports_corner", v: "cricket_ground", dist: 140, type: "3m Path", modes: ["walk", "bike"], accessible: true, cong: 0.3 },
+      { u: "junction_sports_corner", v: "water_body_pond", dist: 180, type: "Cycle Track & Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.15 },
+      { u: "water_body_pond", v: "walkway_lake_north", dist: 120, type: "6m Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.15 },
+      { u: "walkway_lake_north", v: "single_occupancy_hostel", dist: 310, type: "Cycle Track & Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.25 },
+      { u: "cricket_ground", v: "convocation_ground", dist: 110, type: "6m Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.25 },
+      { u: "convocation_ground", v: "walkway_convocation_east", dist: 110, type: "6m Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.3 },
+      { u: "walkway_convocation_east", v: "food_court", dist: 170, type: "6m Footpath", modes: ["walk"], accessible: true, cong: 0.5 },
+      { u: "junction_main_circle", v: "junction_academic_cross", dist: 520, type: "7.5m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.35 },
+      { u: "junction_academic_cross", v: "academic_block", dist: 150, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.6 },
+      { u: "academic_block", v: "parking_academic", dist: 70, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.3 },
+      { u: "academic_block", v: "food_court", dist: 210, type: "6m Footpath", modes: ["walk", "bike"], accessible: true, cong: 0.65 },
+      { u: "junction_academic_cross", v: "food_court", dist: 220, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.45 },
+      { u: "junction_academic_cross", v: "junction_hostel_hub", dist: 240, type: "7.5m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.4 },
+      { u: "junction_hostel_hub", v: "single_occupancy_hostel", dist: 120, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.25 },
+      { u: "junction_hostel_hub", v: "double_occupancy_boys_hostel", dist: 140, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.35 },
+      { u: "junction_hostel_hub", v: "parking_hostels", dist: 90, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.2 },
+      { u: "double_occupancy_boys_hostel", v: "double_occupancy_girls_hostel", dist: 120, type: "6m Footpath & Cycle Track", modes: ["walk", "bike"], accessible: true, cong: 0.2 },
+      { u: "junction_hostel_hub", v: "double_occupancy_girls_hostel", dist: 220, type: "6m Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.25 },
+      { u: "single_occupancy_hostel", v: "commercial_laundry_block", dist: 140, type: "6m Footpath & Road", modes: ["walk", "bike", "two_wheeler", "car"], accessible: true, cong: 0.15 },
+      { u: "central_store_block", v: "parking_academic", dist: 640, type: "7.5m Road", modes: ["bike", "two_wheeler", "car"], accessible: false, cong: 0.25 }
+    ];
+
+    function computeHaversine(lat1, lon1, lat2, lon2) {
+      const p1 = lat1 * Math.PI / 180;
+      const p2 = lat2 * Math.PI / 180;
+      const dp = (lat2 - lat1) * Math.PI / 180;
+      const dl = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
+      return 2 * R_EARTH * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function computeBearing(lat1, lon1, lat2, lon2) {
+      const p1 = lat1 * Math.PI / 180;
+      const p2 = lat2 * Math.PI / 180;
+      const dl = (lon2 - lon1) * Math.PI / 180;
+      const y = Math.sin(dl) * Math.cos(p2);
+      const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+      return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+
+    function getTurnDirection(b1, b2) {
+      const diff = (b2 - b1 + 180) % 360 - 180;
+      if (diff >= -15 && diff <= 15) return "Continue straight";
+      if (diff > 15 && diff <= 45) return "Bear slightly right";
+      if (diff > 45 && diff <= 120) return "Turn right";
+      if (diff > 120 && diff <= 165) return "Sharp right turn";
+      if (diff >= -45 && diff < -15) return "Bear slightly left";
+      if (diff >= -120 && diff < -45) return "Turn left";
+      if (diff >= -165 && diff < -120) return "Sharp left turn";
+      return "Make a U-turn";
+    }
+
+    // Local physics fallback
+    function computeTravelTime(distM, mode, timeOfDay, weather, turns, cong) {
+      const speeds = { walk: 75.0, bike: 200.0, two_wheeler: 330.0, car: 300.0 };
+      const overhead = { walk: 0.2, bike: 0.5, two_wheeler: 1.0, car: 1.8 };
+
+      let weatherF = 1.0;
+      if (weather === "rainy") {
+        weatherF = (mode === "walk") ? 1.25 : (mode === "bike" ? 1.35 : 1.15);
+      } else if (weather === "sunny_hot" && (mode === "walk" || mode === "bike")) {
+        weatherF = 1.10;
+      }
+
+      let todF = 1.0;
+      if (timeOfDay === "morning_peak" || timeOfDay === "afternoon") todF = 1.15;
+      else if (timeOfDay === "evening_peak") todF = 1.10;
+
+      const spd = speeds[mode] || 75.0;
+      const turnDelay = turns * ((mode === "car" || mode === "two_wheeler") ? 0.12 : 0.05);
+      const motion = (distM / spd) * weatherF * todF * (1.0 + 0.25 * cong);
+      return Math.max(0.5, Math.round((motion + turnDelay + (overhead[mode] || 0.2)) * 10) / 10);
+    }
+
+    // Local graph search fallback
+    function searchRouteLocal(startId, goalId, mode, stepFreeOnly) {
+      const distances = {};
+      const previous = {};
+      const edgesUsed = {};
+      const nodeKeys = Object.keys(CAMPUS_NODES);
+
+      nodeKeys.forEach(k => distances[k] = Infinity);
+      distances[startId] = 0;
+
+      const unvisited = new Set(nodeKeys);
+
+      while (unvisited.size > 0) {
+        let current = null;
+        let lowestDist = Infinity;
+        for (const n of unvisited) {
+          if (distances[n] < lowestDist) {
+            lowestDist = distances[n];
+            current = n;
+          }
+        }
+
+        if (current === null || current === goalId || lowestDist === Infinity) break;
+        unvisited.delete(current);
+
+        for (const e of CAMPUS_EDGES) {
+          if (!e.modes.includes(mode)) continue;
+          if (stepFreeOnly && !e.accessible) continue;
+
+          let neighbor = null;
+          if (e.u === current) neighbor = e.v;
+          else if (e.v === current) neighbor = e.u;
+
+          if (neighbor && unvisited.has(neighbor)) {
+            const alt = distances[current] + e.dist;
+            if (alt < distances[neighbor]) {
+              distances[neighbor] = alt;
+              previous[neighbor] = current;
+              edgesUsed[neighbor] = e;
+            }
+          }
+        }
+      }
+
+      if (distances[goalId] === Infinity) return null;
+
+      const path = [];
+      const edges = [];
+      let curr = goalId;
+      while (curr) {
+        path.push(curr);
+        if (edgesUsed[curr]) edges.push(edgesUsed[curr]);
+        curr = previous[curr];
+      }
+      path.reverse();
+      edges.reverse();
+
+      return { path, edges, totalDistance: distances[goalId] };
+    }
+
+    // Global App State
+    let map = null;
+    let activeRouteLayer = null;
+    let activeGeodesicLayer = null;
+    let originMarker = null;
+    let destMarker = null;
+    let simulationMarker = null;
+    let simulationInterval = null;
+    let currentRouteCoords = [];
+    let voiceEnabled = false;
+    let selectedMode = "walk";
+    let mapInitialized = false;
+    let isApiConnected = false;
+
+    // View Routing
+    function switchView(viewName) {
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.add("hidden"));
+      const target = document.getElementById("view-" + viewName);
+      if (target) target.classList.remove("hidden");
+
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.remove("text-ink", "bg-line/50");
+        btn.classList.add("text-muted");
+      });
+      const activeNav = document.getElementById("nav-" + viewName);
+      if (activeNav) {
+        activeNav.classList.add("text-ink", "bg-line/50");
+        activeNav.classList.remove("text-muted");
+      }
+
+      window.location.hash = viewName;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (viewName === "navigator") {
+        if (!mapInitialized) {
+          setTimeout(initMap, 80);
+        } else if (map) {
+          setTimeout(() => {
+            map.invalidateSize();
+            if (activeRouteLayer) map.fitBounds(activeRouteLayer.getBounds(), { padding: [40, 40] });
+          }, 100);
+        }
+      }
+    }
+
+    // Silent health check for backend connectivity
+    async function checkApiHealth() {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/`, { method: "GET" });
+        isApiConnected = resp.ok;
+      } catch (err) {
+        isApiConnected = false;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Check backend status silently
+      checkApiHealth();
+      setInterval(checkApiHealth, 20000);
+
+      // Populate Dropdowns
+      const selOrigin = document.getElementById("selOrigin");
+      const selDest = document.getElementById("selDest");
+      const heroOrigin = document.getElementById("heroOrigin");
+      const heroDest = document.getElementById("heroDest");
+
+      Object.values(CAMPUS_NODES).forEach(node => {
+        const star = node.is_landmark ? " ★" : "";
+        selOrigin.innerHTML += `<option value="${node.id}">${node.name}${star}</option>`;
+        selDest.innerHTML += `<option value="${node.id}">${node.name}${star}</option>`;
+        if (heroOrigin && heroDest) {
+          heroOrigin.innerHTML += `<option value="${node.id}">${node.name}${star}</option>`;
+          heroDest.innerHTML += `<option value="${node.id}">${node.name}${star}</option>`;
+        }
+      });
+
+      selOrigin.value = "main_gate";
+      selDest.value = "academic_block";
+      if (heroOrigin && heroDest) {
+        heroOrigin.value = "main_gate";
+        heroDest.value = "academic_block";
+      }
+
+      // Auto-recalculate on any control change
+      selOrigin.addEventListener("change", executeRouting);
+      selDest.addEventListener("change", executeRouting);
+      document.getElementById("selTimeOfDay").addEventListener("change", executeRouting);
+      document.getElementById("selWeather").addEventListener("change", executeRouting);
+      document.getElementById("chkAccessible").addEventListener("change", executeRouting);
+
+      // Populate Explore Grid
+      renderPlacesDirectory("all");
+
+      // Mode Selector Buttons
+      document.querySelectorAll(".mode-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".mode-btn").forEach(b => {
+            b.classList.remove("active", "border-ink", "bg-ink", "text-surface");
+            b.classList.add("border-line", "bg-bg", "text-muted");
+          });
+          btn.classList.add("active", "border-ink", "bg-ink", "text-surface");
+          btn.classList.remove("border-line", "bg-bg", "text-muted");
+          selectedMode = btn.dataset.mode;
+
+          const notes = {
+            walk: "Walking mode uses dedicated pedestrian footpaths and shaded porticos.",
+            bike: "Bicycle route utilizes dedicated cycle tracks and peripheral roadways.",
+            two_wheeler: "Two-wheeler routing uses arterial campus roads to parking hubs (P1, P2, P3).",
+            car: "Car / Van mode strictly follows main campus roads. Pedestrian walkways are excluded."
+          };
+          document.getElementById("modeConstraintNote").innerText = notes[selectedMode] || "";
+          executeRouting();
+        });
+      });
+
+      // Swap Locations
+      document.getElementById("btnSwap").addEventListener("click", () => {
+        const temp = selOrigin.value;
+        selOrigin.value = selDest.value;
+        selDest.value = temp;
+        executeRouting();
+      });
+
+      // Compute Button
+      document.getElementById("btnCompute").addEventListener("click", executeRouting);
+
+      // Explore Category Filter Tabs
+      document.querySelectorAll(".cat-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".cat-pill").forEach(b => {
+            b.classList.remove("bg-ink", "text-surface");
+            b.classList.add("bg-surface", "text-muted", "border", "border-line");
+          });
+          btn.classList.add("bg-ink", "text-surface");
+          btn.classList.remove("bg-surface", "text-muted", "border", "border-line");
+          renderPlacesDirectory(btn.dataset.cat);
+        });
+      });
+
+      // Window resize re-centering
+      window.addEventListener("resize", () => {
+        if (map && activeRouteLayer) {
+          map.invalidateSize();
+        }
+      });
+
+      // Hash Listener
+      const initialHash = window.location.hash.replace("#", "") || "home";
+      switchView(initialHash);
+    });
+
+    function initMap() {
+      if (mapInitialized) return;
+      mapInitialized = true;
+
+      map = L.map("map", { zoomControl: false }).setView([21.4995, 84.0038], 16);
+      L.control.zoom({ position: "topright" }).addTo(map);
+
+      // Muted CartoDB Positron Base Layer
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_55u6_1_7d3f07b630382abf4e4909ad", {
+        attribution: "© OpenStreetMap contributors, © CARTO",
+        maxZoom: 19
+      }).addTo(map);
+
+      // Draw Attributed Road Network
+      drawCampusNetwork();
+
+      document.getElementById("btnMapFit").addEventListener("click", () => {
+        if (activeRouteLayer) map.fitBounds(activeRouteLayer.getBounds(), { padding: [40, 40] });
+      });
+      document.getElementById("btnMapReset").addEventListener("click", () => {
+        map.setView([21.4995, 84.0038], 16);
+      });
+
+      executeRouting();
+    }
+
+    function drawCampusNetwork() {
+      CAMPUS_EDGES.forEach(edge => {
+        const p1 = [CAMPUS_NODES[edge.u].lat, CAMPUS_NODES[edge.u].lon];
+        const p2 = [CAMPUS_NODES[edge.v].lat, CAMPUS_NODES[edge.v].lon];
+        let color = "#d9d3cb";
+        let weight = 2;
+        let dashArray = null;
+
+        if (edge.type.includes("Road")) {
+          color = "#8c857b";
+          weight = 3.5;
+        } else if (edge.type.includes("Cycle")) {
+          dashArray = "3, 4";
+        }
+
+        const line = L.polyline([p1, p2], {
+          color, weight, opacity: 0.8, dashArray
+        }).addTo(map);
+
+        line.bindTooltip(`${edge.type} &bull; ${edge.dist}m`, { className: "custom-tooltip" });
+      });
+
+      Object.values(CAMPUS_NODES).forEach(node => {
+        const marker = L.circleMarker([node.lat, node.lon], {
+          radius: node.is_landmark ? 6 : 4,
+          fillColor: node.is_landmark ? "#1a1917" : "#8c857b",
+          color: "#fffcf8",
+          weight: 1.5,
+          opacity: 1,
+          fillOpacity: 1
+        }).addTo(map);
+
+        marker.bindPopup(`
+          <div class="space-y-1.5 font-sans min-w-[170px] p-0.5">
+            <div class="font-bold text-xs text-ink tracking-tight">${node.name}</div>
+            <div class="text-[11px] text-muted leading-tight">${node.desc}</div>
+            <div class="text-[9px] uppercase tracking-wider text-muted font-mono">Type: ${node.type}</div>
+            <div class="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-line">
+              <button onclick="setMapOrigin('${node.id}')" class="py-1 px-1.5 bg-bg border border-line rounded text-[10px] font-semibold text-ink hover:border-neutral-500 text-center transition-colors">Set Start</button>
+              <button onclick="setMapDest('${node.id}')" class="py-1 px-1.5 bg-ink text-surface rounded text-[10px] font-semibold hover:bg-neutral-800 text-center transition-colors">Navigate Here</button>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    // Global helper for map marker click actions
+    window.setMapOrigin = function(nodeId) {
+      const sel = document.getElementById("selOrigin");
+      if (sel) {
+        sel.value = nodeId;
+        map.closePopup();
+        executeRouting();
+      }
+    };
+
+    window.setMapDest = function(nodeId) {
+      const sel = document.getElementById("selDest");
+      if (sel) {
+        sel.value = nodeId;
+        map.closePopup();
+        executeRouting();
+      }
+    };
+
+    // Hero launcher actions
+    window.launchHeroRoute = function() {
+      const hOrigin = document.getElementById("heroOrigin").value;
+      const hDest = document.getElementById("heroDest").value;
+      document.getElementById("selOrigin").value = hOrigin;
+      document.getElementById("selDest").value = hDest;
+      switchView("navigator");
+      executeRouting();
+    };
+
+    window.quickLaunchRoute = function(originId, destId, mode) {
+      document.getElementById("selOrigin").value = originId;
+      document.getElementById("selDest").value = destId;
+      switchView("navigator");
+      const modeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+      if (modeBtn) modeBtn.click();
+      else executeRouting();
+    };
+
+    // Preset Scenario loader
+    window.applyPreset = function(originId, destId, mode, stepFree) {
+      const selOrigin = document.getElementById("selOrigin");
+      const selDest = document.getElementById("selDest");
+      const chkAccessible = document.getElementById("chkAccessible");
+
+      if (selOrigin) selOrigin.value = originId;
+      if (selDest) selDest.value = destId;
+      if (chkAccessible) chkAccessible.checked = !!stepFree;
+
+      const modeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+      if (modeBtn) modeBtn.click();
+      else executeRouting();
+    };
+
+    // Click step to pan map to turn junction
+    window.focusStep = function(lat, lon, idx) {
+      if (map) {
+        map.flyTo([lat, lon], 17, { duration: 0.7 });
+      }
+      highlightStep(idx);
+    };
+
+    // Voice guidance toggle and speech synthesis
+    window.toggleVoice = function() {
+      voiceEnabled = !voiceEnabled;
+      const btn = document.getElementById("btnToggleVoice");
+      if (btn) {
+        btn.innerText = voiceEnabled ? "🔊 Voice: On" : "🔇 Voice: Off";
+        btn.className = voiceEnabled 
+          ? "text-[10px] font-mono px-2 py-0.5 rounded bg-ink text-surface transition-colors"
+          : "text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface text-muted hover:text-ink transition-colors";
+      }
+      if (voiceEnabled) {
+        speakInstruction("Voice route guidance enabled.");
+      }
+    };
+
+    function speakInstruction(text) {
+      if (!voiceEnabled || !window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn("Speech synthesis unavailable", e);
+      }
+    }
+
+    // Step highlight
+    function highlightStep(idx) {
+      document.querySelectorAll("#listInstructions li").forEach((li, i) => {
+        if (i === idx) {
+          li.classList.add("bg-line/40", "p-2", "rounded-lg");
+          const text = li.querySelector(".instruction-text")?.innerText || "";
+          if (voiceEnabled && text) speakInstruction(text);
+        } else {
+          li.classList.remove("bg-line/40", "p-2", "rounded-lg");
+        }
+      });
+    }
+
+    // Copy itinerary to clipboard
+    window.copyDirections = function() {
+      const origin = document.getElementById("selOrigin").selectedOptions[0]?.text || "Origin";
+      const dest = document.getElementById("selDest").selectedOptions[0]?.text || "Destination";
+      const dist = document.getElementById("statNavDist").innerText;
+      const eta = document.getElementById("statETA").innerText;
+      const steps = Array.from(document.querySelectorAll("#listInstructions li")).map(li => li.innerText.replace(/\n+/g, " - ")).join("\n");
+
+      const fullText = `IIM Sambalpur Campus Route\nFrom: ${origin}\nTo: ${dest}\nDistance: ${dist} | Estimated Time: ${eta}\n\nStep-by-Step Directions:\n${steps}`;
+      navigator.clipboard.writeText(fullText).then(() => {
+        const btn = document.getElementById("btnCopyDirections");
+        if (btn) {
+          btn.innerText = "✓ Copied!";
+          setTimeout(() => btn.innerText = "📋 Copy", 2000);
+        }
+      });
+    };
+
+    // Live Journey Simulation Animation
+    window.toggleSimulation = function() {
+      if (simulationInterval) {
+        stopSimulation();
+        return;
+      }
+      startSimulation();
+    };
+
+    function startSimulation() {
+      if (!currentRouteCoords || currentRouteCoords.length < 2) return;
+
+      const btn = document.getElementById("btnToggleSim");
+      const progContainer = document.getElementById("simProgressContainer");
+      const progBar = document.getElementById("simProgressBar");
+      const statusText = document.getElementById("simStatusText");
+      const pctText = document.getElementById("simPct");
+
+      if (btn) btn.innerText = "⏹ Stop Simulation";
+      if (progContainer) progContainer.classList.remove("hidden");
+
+      let stepIdx = 0;
+      const total = currentRouteCoords.length;
+
+      if (simulationMarker) map.removeLayer(simulationMarker);
+
+      const simIcon = L.divIcon({
+        className: 'sim-avatar-marker',
+        html: `<div style="background-color:#059669;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 0 10px rgba(5,150,105,0.7);animation:pulse 1.5s infinite;">🚶</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      simulationMarker = L.marker(currentRouteCoords[0], { icon: simIcon, zIndexOffset: 1000 }).addTo(map);
+      map.panTo(currentRouteCoords[0]);
+      highlightStep(0);
+
+      simulationInterval = setInterval(() => {
+        stepIdx++;
+        if (stepIdx >= total) {
+          stopSimulation();
+          if (statusText) statusText.innerText = "Arrived at destination!";
+          if (pctText) pctText.innerText = "100%";
+          if (progBar) progBar.style.width = "100%";
+          speakInstruction("You have arrived at your destination.");
+          return;
+        }
+
+        const pos = currentRouteCoords[stepIdx];
+        simulationMarker.setLatLng(pos);
+        map.panTo(pos);
+
+        const pct = Math.round((stepIdx / (total - 1)) * 100);
+        if (pctText) pctText.innerText = `${pct}%`;
+        if (progBar) progBar.style.width = `${pct}%`;
+        if (statusText) statusText.innerText = `Traversing segment ${stepIdx} of ${total - 1}...`;
+
+        highlightStep(stepIdx);
+      }, 1400);
+    }
+
+    function stopSimulation() {
+      if (simulationInterval) {
+        clearInterval(simulationInterval);
+        simulationInterval = null;
+      }
+      const btn = document.getElementById("btnToggleSim");
+      if (btn) btn.innerText = "▶ Start Live Simulation";
+      const statusText = document.getElementById("simStatusText");
+      if (statusText) statusText.innerText = "Simulation paused";
+    }
+
+    function resetSimUI() {
+      if (simulationInterval) {
+        clearInterval(simulationInterval);
+        simulationInterval = null;
+      }
+      if (simulationMarker && map) {
+        map.removeLayer(simulationMarker);
+        simulationMarker = null;
+      }
+      const btn = document.getElementById("btnToggleSim");
+      if (btn) btn.innerText = "▶ Start Live Simulation";
+      const progContainer = document.getElementById("simProgressContainer");
+      if (progContainer) progContainer.classList.add("hidden");
+      const progBar = document.getElementById("simProgressBar");
+      if (progBar) progBar.style.width = "0%";
+    }
+
+    // Primary Route Execution: Connects to live FastAPI backend with local fallback
+    async function executeRouting() {
+      if (!mapInitialized && document.getElementById("view-navigator").classList.contains("hidden")) {
+        return;
+      }
+      if (!mapInitialized) {
+        initMap();
+      }
+
+      const originId = document.getElementById("selOrigin").value;
+      const destId = document.getElementById("selDest").value;
+      const timeOfDay = document.getElementById("selTimeOfDay").value;
+      const weather = document.getElementById("selWeather").value;
+      const stepFree = document.getElementById("chkAccessible").checked;
+
+      const alertBox = document.getElementById("navErrorAlert");
+      const alertMsg = document.getElementById("navErrorMessage");
+
+      if (originId === destId) {
+        alertBox.classList.remove("hidden");
+        alertMsg.innerText = "Origin and destination cannot be identical. Please select a distinct destination.";
+        return;
+      }
+
+      const origin = CAMPUS_NODES[originId];
+      const dest = CAMPUS_NODES[destId];
+
+      let apiSuccess = false;
+
+      // 1. Attempt Live Backend API Call
+      try {
+        const payload = {
+          source: originId,
+          destination: destId,
+          mode: selectedMode,
+          time_of_day: timeOfDay,
+          weather: weather,
+          step_free: stepFree
+        };
+
+        const res = await fetch(`${API_BASE_URL}/api/navigate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const apiData = await res.json();
+          renderNavigationResultFromApi(apiData, origin, dest);
+          apiSuccess = true;
+        } else if (res.status === 422) {
+          const errData = await res.json();
+          alertBox.classList.remove("hidden");
+          alertMsg.innerText = errData.detail || `Route unavailable for ${selectedMode.toUpperCase()}.`;
+          document.getElementById("routeBadge").innerText = "Restricted";
+          return;
+        }
+      } catch (err) {
+        // Backend offline or unreachable: fall through to client-side fallback
+        apiSuccess = false;
+      }
+
+      // 2. Local Fallback Engine if API is offline
+      if (!apiSuccess) {
+        renderNavigationResultLocal(originId, destId, origin, dest, timeOfDay, weather, stepFree);
+      }
+    }
+
+    // Render result returned directly from FastAPI Server
+    function renderNavigationResultFromApi(data, origin, dest) {
+      const alertBox = document.getElementById("navErrorAlert");
+      alertBox.classList.add("hidden");
+      document.getElementById("routeBadge").innerText = "Optimal Route";
+
+      const totalDist = data.metrics.navigable_distance_m;
+      const straightDist = data.metrics.straight_line_distance_m;
+      const etaMin = data.metrics.predicted_eta_minutes;
+      const turns = data.metrics.number_of_turns;
+      const detour = data.metrics.network_detour_ratio;
+
+      document.getElementById("statNavDist").innerText = `${totalDist} m`;
+      document.getElementById("statDirectDist").innerText = `Direct: ${straightDist} m`;
+      document.getElementById("statETA").innerText = `${etaMin} min`;
+      document.getElementById("statTurns").innerText = `Turns: ${turns}`;
+
+      const modeTitles = { walk: "Walking Route", bike: "Bicycle Route", two_wheeler: "Two-Wheeler Route", car: "Car / Van Route" };
+      document.getElementById("lblTripMode").innerText = modeTitles[data.mode] || "Route";
+      document.getElementById("lblDetourRatio").innerText = `${detour}x Detour`;
+      document.getElementById("lblTripTitle").innerText = `${origin.name} ➔ ${dest.name}`;
+
+      document.getElementById("txtExplanation").innerText = data.route_guidance || "Uses paved pedestrian walkways and shaded corridors.";
+      document.getElementById("txtLandmarkGuide").innerText = data.offline_landmark_guide;
+
+      currentRouteCoords = data.route_coordinates || [];
+      resetSimUI();
+
+      // Render Directions with clickable focus
+      const list = document.getElementById("listInstructions");
+      list.innerHTML = "";
+      data.turn_by_turn_directions.forEach((step, idx) => {
+        const coord = data.route_coordinates[idx] || data.route_coordinates[0] || [origin.lat, origin.lon];
+        list.innerHTML += `
+          <li onclick="focusStep(${coord[0]}, ${coord[1]}, ${idx})" class="pb-2 border-b border-line cursor-pointer hover:bg-line/20 p-1.5 rounded-lg transition-colors group">
+            <div class="flex justify-between font-semibold text-ink group-hover:text-black">
+              <span class="instruction-text">${step.step}. ${step.step === 1 ? 'Depart ' + origin.name : step.instruction}</span>
+              <span class="font-mono text-muted text-[10px]">${step.distance_m}m</span>
+            </div>
+            <div class="text-muted text-[11px] mt-0.5">${step.landmark_cue || step.path_type}</div>
+          </li>
+        `;
+      });
+
+      // Draw map polylines
+      renderPolylinesOnMap(origin, dest, data.route_coordinates);
+    }
+
+    // Render result using client-side graph search fallback
+    function renderNavigationResultLocal(originId, destId, origin, dest, timeOfDay, weather, stepFree) {
+      const alertBox = document.getElementById("navErrorAlert");
+      const alertMsg = document.getElementById("navErrorMessage");
+
+      const directDistM = Math.round(computeHaversine(origin.lat, origin.lon, dest.lat, dest.lon));
+      const result = searchRouteLocal(originId, destId, selectedMode, stepFree);
+
+      if (!result) {
+        alertBox.classList.remove("hidden");
+        alertMsg.innerText = `No accessible route exists for ${selectedMode.toUpperCase()}. Vehicles cannot access pedestrian walkways, or step-free access is unavailable on this segment.`;
+        document.getElementById("routeBadge").innerText = "Restricted";
+        return;
+      }
+
+      alertBox.classList.add("hidden");
+      document.getElementById("routeBadge").innerText = "Optimal Route";
+
+      const { path, edges, totalDistance } = result;
+      const turnsCount = Math.max(0, path.length - 2);
+      const avgCongestion = edges.reduce((acc, e) => acc + (e.cong || 0.2), 0) / Math.max(edges.length, 1);
+
+      const etaMinutes = computeTravelTime(totalDistance, selectedMode, timeOfDay, weather, turnsCount, avgCongestion);
+      const detourRatio = (totalDistance / Math.max(directDistM, 1)).toFixed(2);
+
+      document.getElementById("statNavDist").innerText = `${totalDistance} m`;
+      document.getElementById("statDirectDist").innerText = `Direct: ${directDistM} m`;
+      document.getElementById("statETA").innerText = `${etaMinutes} min`;
+      document.getElementById("statTurns").innerText = `Turns: ${turnsCount}`;
+
+      const modeTitles = { walk: "Walking Route", bike: "Bicycle Route", two_wheeler: "Two-Wheeler Route", car: "Car / Van Route" };
+      document.getElementById("lblTripMode").innerText = modeTitles[selectedMode] || "Route";
+      document.getElementById("lblDetourRatio").innerText = `${detourRatio}x Detour`;
+      document.getElementById("lblTripTitle").innerText = `${origin.name} ➔ ${dest.name}`;
+
+      const narrativeParts = [];
+      if (selectedMode === "car") {
+        narrativeParts.push("Follows main 7.5m and 6m arterial roadways directly to campus parking.");
+      } else if (selectedMode === "bike") {
+        narrativeParts.push("Uses dedicated cycle tracks and peripheral campus routes.");
+      } else {
+        narrativeParts.push("Uses paved pedestrian walkways and shaded corridors.");
+      }
+      if (stepFree) {
+        narrativeParts.push("Step-free route selected, avoiding stairs and steep paths.");
+      }
+      if (weather === "rainy") {
+        narrativeParts.push("Monsoon rain travel adjustments applied.");
+      }
+      document.getElementById("txtExplanation").innerText = narrativeParts.join(" ");
+
+      const pathCoords = path.map(k => [CAMPUS_NODES[k].lat, CAMPUS_NODES[k].lon]);
+      currentRouteCoords = pathCoords;
+      resetSimUI();
+
+      const list = document.getElementById("listInstructions");
+      list.innerHTML = "";
+
+      const n0 = CAMPUS_NODES[path[0]];
+      const n1 = CAMPUS_NODES[path[1]];
+      const b0 = Math.round(computeBearing(n0.lat, n0.lon, n1.lat, n1.lon));
+
+      list.innerHTML += `
+        <li onclick="focusStep(${n0.lat}, ${n0.lon}, 0)" class="pb-2 border-b border-line cursor-pointer hover:bg-line/20 p-1.5 rounded-lg transition-colors group">
+          <div class="flex justify-between font-semibold text-ink group-hover:text-black">
+            <span class="instruction-text">1. Depart ${n0.name}</span>
+            <span class="font-mono text-muted text-[10px]">${edges[0].dist}m</span>
+          </div>
+          <div class="text-muted text-[11px] mt-0.5">Head toward ${n1.name} along ${edges[0].type}.</div>
+        </li>
+      `;
+
+      let prevBearing = b0;
+      const passedLandmarks = [];
+
+      for (let i = 1; i < path.length - 1; i++) {
+        const curr = CAMPUS_NODES[path[i]];
+        const next = CAMPUS_NODES[path[i + 1]];
+        const bNext = Math.round(computeBearing(curr.lat, curr.lon, next.lat, next.lon));
+        const turn = getTurnDirection(prevBearing, bNext);
+        const edge = edges[i];
+
+        if (curr.is_landmark) passedLandmarks.push(curr.name);
+
+        list.innerHTML += `
+          <li onclick="focusStep(${curr.lat}, ${curr.lon}, ${i})" class="pb-2 border-b border-line cursor-pointer hover:bg-line/20 p-1.5 rounded-lg transition-colors group">
+            <div class="flex justify-between font-semibold text-ink group-hover:text-black">
+              <span class="instruction-text">${i + 1}. ${turn}</span>
+              <span class="font-mono text-muted text-[10px]">${edge.dist}m</span>
+            </div>
+            <div class="text-muted text-[11px] mt-0.5">At <strong>${curr.name}</strong>, proceed along ${edge.type} toward ${next.name}.</div>
+          </li>
+        `;
+        prevBearing = bNext;
+      }
+
+      list.innerHTML += `
+        <li onclick="focusStep(${dest.lat}, ${dest.lon}, ${path.length - 1})" class="pt-1 font-semibold text-ink cursor-pointer hover:bg-line/20 p-1.5 rounded-lg transition-colors group">
+          <span class="instruction-text">${path.length}. Arrive at ${dest.name}</span>
+          <div class="text-muted text-[11px] font-normal mt-0.5">Destination reached.</div>
+        </li>
+      `;
+
+      const landmarkText = passedLandmarks.length > 0 ? passedLandmarks.join(" → ") : "main campus corridor";
+      document.getElementById("txtLandmarkGuide").innerText = 
+        `Physical landmark cue: Depart ${origin.name}, follow signs past ${landmarkText}, and conclude journey at ${dest.name}.`;
+
+      renderPolylinesOnMap(origin, dest, pathCoords);
+    }
+
+    // Helper to render polylines, start/finish pins, and fit bounds on Leaflet map
+    function renderPolylinesOnMap(origin, dest, coords) {
+      if (activeRouteLayer) map.removeLayer(activeRouteLayer);
+      if (activeGeodesicLayer) map.removeLayer(activeGeodesicLayer);
+      if (originMarker) map.removeLayer(originMarker);
+      if (destMarker) map.removeLayer(destMarker);
+
+      activeGeodesicLayer = L.polyline([[origin.lat, origin.lon], [dest.lat, dest.lon]], {
+        color: "#6f6b66",
+        weight: 1.5,
+        dashArray: "3, 5",
+        opacity: 0.7
+      }).addTo(map);
+
+      activeRouteLayer = L.polyline(coords, {
+        color: "#A34C32",
+        weight: 4.5,
+        opacity: 0.95
+      }).addTo(map);
+
+      // Start Pin Marker "A"
+      const originIcon = L.divIcon({
+        className: 'custom-pin-marker',
+        html: `<div style="background-color:#1a1917;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">A</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      originMarker = L.marker([origin.lat, origin.lon], { icon: originIcon }).addTo(map);
+      originMarker.bindTooltip(`<strong>Start:</strong> ${origin.name}`, { className: 'custom-tooltip', direction: 'top' });
+
+      // Destination Pin Marker "B"
+      const destIcon = L.divIcon({
+        className: 'custom-pin-marker',
+        html: `<div style="background-color:#A34C32;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">B</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+      destMarker = L.marker([dest.lat, dest.lon], { icon: destIcon }).addTo(map);
+      destMarker.bindTooltip(`<strong>Destination:</strong> ${dest.name}`, { className: 'custom-tooltip', direction: 'top' });
+
+      map.fitBounds(activeRouteLayer.getBounds(), { padding: [50, 50] });
+    }
+
+    function resetPlanner() {
+      document.getElementById("selOrigin").value = "main_gate";
+      document.getElementById("selDest").value = "academic_block";
+      document.querySelector('[data-mode="walk"]').click();
+      document.getElementById("selTimeOfDay").value = "morning_peak";
+      document.getElementById("selWeather").value = "clear";
+      document.getElementById("chkAccessible").checked = false;
+      resetSimUI();
+      executeRouting();
+    }
+
+    function renderPlacesDirectory(category) {
+      const grid = document.getElementById("exploreGrid");
+      grid.innerHTML = "";
+
+      const filtered = Object.values(CAMPUS_NODES).filter(n => {
+        if (category === "all") return true;
+        return n.type === category;
+      });
+
+      filtered.forEach(node => {
+        const card = document.createElement("div");
+        card.className = "bg-surface border border-line rounded-xl overflow-hidden flex flex-col justify-between hover:border-neutral-500 transition-colors shadow-sm";
+        card.innerHTML = `
+          <div>
+            <div class="h-44 w-full overflow-hidden bg-bg relative">
+              <img src="${node.img}" alt="${node.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+              <div class="absolute top-2.5 left-2.5">
+                <span class="text-[9px] uppercase tracking-wider font-mono text-ink bg-surface/90 backdrop-blur-sm px-2 py-0.5 rounded border border-line">${node.type}</span>
+              </div>
+              ${node.is_landmark ? '<div class="absolute top-2.5 right-2.5"><span class="text-[10px] text-ink font-semibold bg-surface/90 backdrop-blur-sm px-2 py-0.5 rounded border border-line">★ Milestone</span></div>' : ''}
+            </div>
+            <div class="p-4 space-y-1.5">
+              <h4 class="font-serif text-base font-bold text-ink">${node.name}</h4>
+              <p class="text-xs text-muted leading-relaxed">${node.desc}</p>
+            </div>
+          </div>
+          <div class="p-4 pt-0">
+            <button data-id="${node.id}" class="btn-navigate-target w-full py-2 px-3 rounded-lg bg-bg hover:bg-line/40 text-xs font-semibold text-ink text-center border border-line transition-colors">
+              Navigate here &rarr;
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.querySelectorAll(".btn-navigate-target").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.getElementById("selDest").value = btn.dataset.id;
+          switchView("navigator");
+          executeRouting();
+        });
+      });
+    }
+  </script>
+</body>
+</html>
